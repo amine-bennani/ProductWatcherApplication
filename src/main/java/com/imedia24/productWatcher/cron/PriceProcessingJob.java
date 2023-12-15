@@ -1,11 +1,9 @@
 package com.imedia24.productWatcher.cron;
 
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 import com.imedia24.productWatcher.service.PriceProcessingService;
 
-@Component
 public class PriceProcessingJob {
 
     private final PriceProcessingService priceProcessingService;

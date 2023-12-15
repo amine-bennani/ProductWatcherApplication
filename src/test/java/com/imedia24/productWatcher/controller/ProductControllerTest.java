@@ -1,8 +1,11 @@
 package com.imedia24.productWatcher.controller;
 
 import com.imedia24.productWatcher.controller.*;
+import com.imedia24.productWatcher.model.Product;
+import com.imedia24.productWatcher.service.ProductService;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -44,7 +47,7 @@ class ProductControllerTest {
         when(productService.createProduct(any(Product.class))).thenThrow(ValidationException.class);
 
         // Testing the ProductController's createProduct method with a validation failure
-        ResponseEntity<Product> responseEntity = productController.createProduct(new Product());
+        ResponseEntity<Product> responseEntity = productController.createProduct(new Product(0, null));
 
         // Asserting the response
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
