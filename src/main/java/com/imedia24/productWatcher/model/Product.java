@@ -1,9 +1,27 @@
 package com.imedia24.productWatcher.model;
 
-public class Product {
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
-	public Product(int i, String string) {
+
+
+@Entity
+public class Product {
+    
+	@Id
+    private String sku;
+    
+	private String name;
+	
+	public Product(int i, Object object) {
 		// TODO Auto-generated constructor stub
 	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
 
+    // Getters and setters
 }
