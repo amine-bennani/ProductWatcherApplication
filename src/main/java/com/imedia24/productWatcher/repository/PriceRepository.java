@@ -12,4 +12,6 @@ public interface PriceRepository extends JpaRepository<Price, Long> {
     List<Price> findBySkuOrderByDateDesc(int sku);
 
     Page<Price> findBySku(int sku, Pageable pageable);
+    
+    List<Price> findAllByOrderByPriceAsc();
 }

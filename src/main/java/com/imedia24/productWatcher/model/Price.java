@@ -10,7 +10,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "price")
-public class Price {
+public class Price implements Comparable<Price>{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -41,6 +41,14 @@ public class Price {
 	public void setPrice(Double price) {
 		this.price = price;
 	}
-
+	
+	 @Override
+    public int compareTo(Price other) {
+        // Implement comparison logic based on the double value
+        // Return a negative value if this instance is less than the other
+        // Return 0 if this instance is equal to the other
+        // Return a positive value if this instance is greater than the other
+        return Double.compare(this.price, other.price);
+    }
     // Getters and setters
 }

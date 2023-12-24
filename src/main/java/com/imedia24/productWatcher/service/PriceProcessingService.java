@@ -1,24 +1,17 @@
 package com.imedia24.productWatcher.service;
 
-import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Service;
-
 import com.imedia24.productWatcher.model.Action;
 import com.imedia24.productWatcher.model.Price;
 import com.imedia24.productWatcher.model.ProcessPricesResponse;
 import com.imedia24.productWatcher.repository.PriceRepository;
-
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-
-import java.util.PriorityQueue;
+import java.util.List;
 
 
 @Service
@@ -45,59 +38,38 @@ public class PriceProcessingService {
 
     public ProcessPricesResponse processPricesAndNotify() {
         // Retrieve all prices from the database
-        List<Price> allPrices = priceRepository.findAll();
-
-        // Find best dates to buy and sell
-        List<LocalDate> bestDatesToBuy = findBestDates(allPrices, NUM_DATES_TO_FIND, Comparator.comparing(Price::getPrice));
-        List<LocalDate> bestDatesToSell = findBestDates(allPrices, NUM_DATES_TO_FIND, Comparator.comparing(Price::getPrice).reversed());
-        
-        List<Action> actionList= new ArrayList<Action>();
-        bestDatesToBuy.forEach(date -> {
-            Action action = new Action("1", "BUY", date.toString());
-            actionList.add(action);
-            //kafkaTemplate.send("your_kafka_topic", action);
-        });
-        bestDatesToSell.forEach(date -> {
-            Action action = new Action("1", "SELL", date.toString());
-            actionList.add(action);
-            //kafkaTemplate.send("your_kafka_topic", action);
-        });
-        // Notify and push results to Kafka topic
-//        notifyAndPushToKafka("BUY", bestDatesToBuy);
-//        notifyAndPushToKafka("SELL", bestDatesToSell);
-        
-        return new ProcessPricesResponse(actionList);
+        List<Price> allPrices = priceRepository.findAllByOrderByPriceAsc();
+        List<Action> listActions = new ArrayList<Action>();
+        int actionNumbers = (allPrices.size() / 2) - 1;
+        for (int i=0;i<actionNumbers;i++) {
+        	
+        	Price lowestPrice = allPrices.get(0);
+        	Action buyAction = new Action (lowestPrice.getSku(),"BUY",lowestPrice.getDate().toString());
+        	listActions.add(buyAction);
+        	//kafkaTemplate.send("your_kafka_topic", buyAction);
+        	
+        	Price highestPrice = allPrices.get(allPrices.size()-1);
+        	Action sellAction = new Action (highestPrice.getSku(),"SELL",highestPrice.getDate().toString());
+        	listActions.add(sellAction);
+        	//kafkaTemplate.send("your_kafka_topic", sellAction);
+        	
+        	allPrices.remove(0);
+        	allPrices.remove(allPrices.size()-1);
+        }        
+        return new ProcessPricesResponse(listActions);
     }
 
-    private List<LocalDate> findBestDates(List<Price> prices, int numDates, Comparator<Price> comparator) {
-        PriorityQueue<Price> priceQueue = new PriorityQueue<>(comparator);
-
-        for (Price price : prices) {
-            priceQueue.offer(price);
-            if (priceQueue.size() > numDates) {
-                priceQueue.poll(); // Remove the lowest or highest price depending on the comparator
-            }
-        }
-
-        List<LocalDate> result = new ArrayList<>();
-        while (!priceQueue.isEmpty()) {
-            result.add(priceQueue.poll().getDate());
-        }
-
-        return result;
-    }
-
-    private void  notifyAndPushToKafka(String actionType, List<LocalDate> dates) {
-        // Notify or perform further actions with the results
-        System.out.println("Best dates to " + actionType.toLowerCase() + ": " + dates);
-
-        // Push results to Kafka topic
-        dates.forEach(date -> {
-            Action action = new Action("1", actionType, date.toString());
-            //kafkaTemplate.send("your_kafka_topic", action);
-        });
+//    private void  notifyAndPushToKafka(String actionType, List<LocalDate> dates) {
+//        // Notify or perform further actions with the results
+//        System.out.println("Best dates to " + actionType.toLowerCase() + ": " + dates);
+//
+//        // Push results to Kafka topic
+//        dates.forEach(date -> {
+//            Action action = new Action("1", actionType, date.toString());
+//            
+//        });
+//        
         
         
-        
-    }
+    
 }
